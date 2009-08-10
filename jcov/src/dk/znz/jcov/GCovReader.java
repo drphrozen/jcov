@@ -4,11 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
-import java.io.InputStream;
 import java.math.BigInteger;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
-import java.nio.channels.FileChannel;
+import java.nio.LongBuffer;
 import java.nio.channels.ReadableByteChannel;
 import java.nio.charset.Charset;
 
@@ -21,11 +20,11 @@ public class GCovReader {
 	private final BigInteger UINT32_MAX_VALUE = BigInteger.valueOf(4294967295L);
 	private ReadableByteChannel channel;
 	
-	public GCovReader(File file) {
+	public GCovReader(File file) throws FileNotFoundException {
 		FileInputStream stream = new FileInputStream(file);
+		channel = stream.getChannel();
 		
 		buffer.order(ByteOrder.nativeOrder());
-		this.channel = channel;
 		try {
 			channel.read(buffer);
 			buffer.rewind();
@@ -34,15 +33,24 @@ public class GCovReader {
 		}
 	}
 	
-	public getHeader()
+	public Header getHeader()
 	{
-		
+		return new Header(this);
+	}
+	
+	public Record getRecord()
+	{
+		return new Record(this);
 	}
 	
 	public String getFourChars()
 	{
-		buffer.get(fourBytesBuffer);
-		return new String(fourBytesBuffer, ascii);
+		ByteBuffer bb = ByteBuffer.allocate(8);
+		bb.putLong(0, getInt32());
+		byte[] tmp = new byte[4];
+		bb.position(4);
+		bb.get(tmp);
+		return new String(tmp, ascii);
 	}
 	
 	public long getInt32()
@@ -75,14 +83,17 @@ public class GCovReader {
 	{
 		if(arguments.length == 1)
 		{
-			FileInputStream input;
 			try {
-				input = new FileInputStream(new File(arguments[0]));
-				FileChannel channel = input.getChannel();
-				GCovReader gcov = new GCovReader(channel);
-				System.out.println("Read: " + Long.toHexString(gcov.getInt32()));
-				System.out.println("Expe: " + Long.toHexString(GCovReader.GCOV_DATA_MAGIC));
-				System.out.println("Version: " + buffer);
+				GCovReader gcov = new GCovReader(new File(arguments[0]));
+				Header header = gcov.getHeader();
+				System.out.println("gcda:    " + GCOV_DATA_MAGIC);
+				System.out.println("gcno:    " + GCOV_NOTE_MAGIC);
+				System.out.println("Magic:   " + header.getMagic());
+				System.out.println("Stamp:   " + header.getStamp());
+				System.out.println("Version: " + header.getVersion());
+				Record record = gcov.getRecord();
+				System.out.println("Length:  " + record.getHeader().getLength());
+				System.out.println("Tag:     " + record.getHeader().getTag());
 			} catch (FileNotFoundException e) {
 				e.printStackTrace();
 			}

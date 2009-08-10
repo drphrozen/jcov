@@ -1,12 +1,12 @@
 package dk.znz.jcov;
 
 public class Header {
-	private String magic;
+	private long magic;
 	private Version version;
 	private long stamp;
 	private Record[] records;
 		
-	public String getMagic() {
+	public long getMagic() {
 		return magic;
 	}
 
@@ -19,8 +19,10 @@ public class Header {
 	}
 
 	public Header(GCovReader reader) {
-		magic = reader.getFourChars();
+		
+		magic = reader.getInt32();
 		version = new Version(reader);
 		stamp = reader.getInt32();
 	}
+	
 }
