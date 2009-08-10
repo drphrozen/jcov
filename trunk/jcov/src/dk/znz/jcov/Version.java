@@ -7,12 +7,12 @@ public class Version {
 
 	public Version(GCovReader reader) {
 		String version = reader.getFourChars();
-		if (major >= '0' && major <= '9')
+		if (version.charAt(0) >= '0' && version.charAt(0) <= '9')
 			major = version.charAt(0) - '0';
 		else
 			major = version.charAt(0) - 'A';
 		try {
-			minor = Integer.parseInt(version.substring(1, 2));
+			minor = Integer.parseInt(version.substring(1, 3));
 		} catch (NumberFormatException e) {
 			minor = -1;
 			e.printStackTrace();
@@ -30,5 +30,10 @@ public class Version {
 
 	public char getStatus() {
 		return status;
+	}
+	
+	@Override
+	public String toString() {
+		return getMajor() + "." + getMinor() + "." + getStatus();
 	}
 }
