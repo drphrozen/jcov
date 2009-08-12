@@ -13,7 +13,7 @@ public class RecordHeader {
 	}
 
 	public RecordHeader(GCovReader reader) {
-		tag = reader.getInt32();
-		length = reader.getInt32();
+		tag = reader.getUInt32();
+		length = reader.getUInt32();
 	}
 }
