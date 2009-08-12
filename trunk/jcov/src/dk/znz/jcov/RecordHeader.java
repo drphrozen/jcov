@@ -1,5 +1,7 @@
 package dk.znz.jcov;
 
+import java.io.IOException;
+
 public class RecordHeader {
 	private long tag;
 	private long length;
@@ -12,8 +14,8 @@ public class RecordHeader {
 		return length;
 	}
 
-	public RecordHeader(GCovReader reader) {
-		tag = reader.getUInt32();
-		length = reader.getUInt32();
+	public RecordHeader(GCovReader reader) throws IOException {
+		tag = reader.getUInt32().value();
+		length = reader.getUInt32().value();
 	}
 }
