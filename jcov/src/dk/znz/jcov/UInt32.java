@@ -4,9 +4,14 @@ public class UInt32 extends Number implements Comparable<UInt32> {
 
 	private static final long serialVersionUID = -6717966716922305289L;
 
-	private Long value;
-	public static long MAX_VALUE = 4294967295L;
-	public static long MIN_VALUE = 0L;
+	private final Long value;
+	public static final long MAX_VALUE = 4294967295L;
+	public static final long MIN_VALUE = 0L;
+	
+	public UInt32(int value)
+	{
+		this.value = ((long)value & 0xffffffffL);
+	}
 	
 	public UInt32(long value) throws NumberFormatException {
 		this.value = value;
@@ -44,4 +49,18 @@ public class UInt32 extends Number implements Comparable<UInt32> {
 	public int compareTo(UInt32 anotherUInt32) {
 		return value.compareTo(anotherUInt32.value);
 	}
+	
+	public long value()
+	{
+		return value;
+	}
+	
+	public byte[] toBytes()
+	{
+		byte[] bytes = new byte[4];
+		for(int i = 0; i < 4; i++)
+			bytes[3-i] = (byte) ((value >> i*8) & 0xFF);
+		return bytes;
+	}
+
 }

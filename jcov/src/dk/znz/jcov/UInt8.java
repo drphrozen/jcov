@@ -4,16 +4,20 @@ public class UInt8 extends Number implements Comparable<UInt8> {
 
 	private static final long serialVersionUID = 6603783542856393288L;
 
-	private Short value;
-	public static short MAX_VALUE = 255;
-	public static short MIN_VALUE = 0;
-
+	private final Short value;
+	public static final short MAX_VALUE = 255;
+	public static final short MIN_VALUE = 0;
+	
+	public UInt8(byte value) {
+		this.value = ((short)(value & 0xff));
+	}
+	
 	public UInt8(short value) throws NumberFormatException {
 		this.value = value;
 		if(value > MAX_VALUE || value < MIN_VALUE)
 			throw new NumberFormatException("The number must be from " + MIN_VALUE + " - " + MAX_VALUE + "!");
 	}
-	
+
 	public UInt8(String s) throws NumberFormatException {
 		value = Short.parseShort(s);
 		if(value > MAX_VALUE || value < MIN_VALUE)
@@ -45,4 +49,9 @@ public class UInt8 extends Number implements Comparable<UInt8> {
 		return value.compareTo(anotherUInt8.value);
 	}
 	
+	public short value()
+	{
+		return value;
+	}
+
 }

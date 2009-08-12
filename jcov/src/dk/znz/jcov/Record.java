@@ -1,5 +1,7 @@
 package dk.znz.jcov;
 
+import java.io.IOException;
+
 public class Record {
 	private RecordHeader header;
 	private RecordItem[] data;
@@ -12,7 +14,7 @@ public class Record {
 		return data;
 	}
 
-	public Record(GCovReader reader) {
+	public Record(GCovReader reader) throws IOException {
 		header = new RecordHeader(reader);
 		data = new RecordItem[(int) header.getLength()];
 		for (int i = 0; i < header.getLength(); i++) {

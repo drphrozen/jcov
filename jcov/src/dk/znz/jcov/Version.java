@@ -1,11 +1,13 @@
 package dk.znz.jcov;
 
+import java.io.IOException;
+
 public class Version {
 	int major;
 	int minor;
 	char status;
 
-	public Version(GCovReader reader) {
+	public Version(GCovReader reader) throws IOException {
 		String version = reader.getFourChars();
 		if (version.charAt(0) >= '0' && version.charAt(0) <= '9')
 			major = version.charAt(0) - '0';
