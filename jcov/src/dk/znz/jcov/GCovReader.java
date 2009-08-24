@@ -21,6 +21,21 @@ public class GCovReader {
 	public static final int GCOV_NOTE_MAGIC_LITTLE = 0x6f6e6367;
 
 	private Filetype filetype;
+	private long bytesRead;
+	private int bytesRemainingInBuffer;
+	
+	public Filetype getFiletype() {
+		return filetype;
+	}
+	
+	public long getBytesRead() {
+		return bytesRead;
+	}
+	
+	public int getBytesRemainingInBuffer() {
+		return bytesRemainingInBuffer;
+	}
+
 	private ByteBuffer buffer = ByteBuffer.allocate(4 * 1024); // 4k buffer
 	private final Charset CHARSET_ASCII = Charset.forName("US-ASCII");
 	private ReadableByteChannel channel;
@@ -52,7 +67,7 @@ public class GCovReader {
 
 		channel = stream.getChannel();
 		try {
-			channel.read(buffer);
+			bytesRead += channel.read(buffer);
 			buffer.rewind();
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -69,7 +84,7 @@ public class GCovReader {
 
 	public UInt32 getUInt32() throws IOException {
 		if (!buffer.hasRemaining()) {
-			channel.read(buffer);
+			bytesRead += channel.read(buffer);
 			buffer.rewind();
 		}
 		return new UInt32(buffer.getInt());
@@ -80,21 +95,37 @@ public class GCovReader {
 		return new String(bytes, CHARSET_ASCII);
 	}
 
-	public Filetype getFiletype() {
-		return filetype;
+	public String getString() throws IOException {
+		long blocks = getUInt32().longValue();
+		if(blocks == 0)
+			return "";
+		long longLength = blocks * 4;
+		if (longLength > Integer.MAX_VALUE)
+			throw new IOException("The string is to long to be loaded: " + longLength
+					+ " characters!");
+		int length = (int)longLength;
+		ByteBuffer bytes = ByteBuffer.allocate(length);
+		byte[] smallBuffer = new byte[4];
+		for (int i = 0; i < blocks; i++)
+		{
+			if (!buffer.hasRemaining()) {
+				bytesRead += channel.read(buffer);
+				buffer.rewind();
+			}
+			buffer.get(smallBuffer);
+			bytes.put(smallBuffer);
+		}
+		byte[] byteString = bytes.array();
+		for(int i = length-4; i < length; i++)
+		{
+			if(byteString[i] == 0x00)
+			{
+				length = i;
+				break;
+			}
+		}
+		return new String(bytes.array(), 0, length, CHARSET_ASCII);
 	}
-
-	// public String getString() throws Exception
-	// {
-	// long length = getUInt32().val;
-	// if(length*4 > Integer.MAX_VALUE)
-	// throw new Exception("The string is to long to be loaded: " + length +
-	// " characters!");
-	// byte[] str = new byte[(int) (length*4)];
-	// for(int i = 0; i<length; i++)
-	// str[i] = buffer.get();
-	// return new String(str, ascii);
-	// }
 
 	// private static String convertByteToBits(byte b) {
 	// StringBuilder sb = new StringBuilder(8);
@@ -103,28 +134,4 @@ public class GCovReader {
 	// }
 	// return sb.toString();
 	// }
-
-	public static void main(String[] arguments) {
-		if (arguments.length == 1) {
-			try {
-				GCovReader gcov = new GCovReader(new File(arguments[0]));
-				Header header = gcov.getHeader();
-				System.out.println("Stamp:   " + header.getStamp());
-				System.out.println("Version: " + header.getVersion());
-				Record record = gcov.getRecord();
-				System.out.println("Length:  " + record.getHeader().getLength());
-				System.out.println("Tag:     " + record.getHeader().getTag());
-			} catch (FileNotFoundException e) {
-				e.printStackTrace();
-			} catch (IOException e) {
-				e.printStackTrace();
-			}
-		} else {
-			System.out.println("Wrong number of arguments, got "
-					+ arguments.length);
-			for (String argument : arguments) {
-				System.out.println("  " + argument);
-			}
-		}
-	}
 }

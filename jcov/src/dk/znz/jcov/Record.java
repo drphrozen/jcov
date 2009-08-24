@@ -16,8 +16,9 @@ public class Record {
 
 	public Record(GCovReader reader) throws IOException {
 		header = new RecordHeader(reader);
-		data = new RecordItem[(int) header.getLength()];
-		for (int i = 0; i < header.getLength(); i++) {
+		int length = header.getIntLength();
+		data = new RecordItem[length];
+		for (int i = 0; i < length; i++) {
 			data[i] = new RecordItem(reader);
 		}
 	}
